@@ -1,0 +1,88 @@
+version: '3.8'
+
+x-defaults: &default-env
+  environment:
+    - DOMAIN=${DOMAIN}
+    - CLIENT_ID=${CLIENT_ID}
+    - CLIENT_SECRET=${CLIENT_SECRET}
+    - VERIFY_SSL=${VERIFY_SSL}
+
+services:
+  frontend:
+    <<: *default-env
+    image: registry.gitlab.com/marc.haenni/semesterarbeit-3-marc-haenni/frontend:latest
+    ports:
+      - "5000:5000"
+    depends_on:
+      - auth-service
+      - file-service
+      - license-service
+      - redis
+    restart: unless-stopped
+
+  auth-service:
+    <<: *default-env
+    image: registry.gitlab.com/marc.haenni/semesterarbeit-3-marc-haenni/auth-service:latest
+    ports:
+      - "5001:5001"
+    environment:
+      - FRONTEND_URL=https://${DOMAIN}/
+      - REDIRECT_URI=https://${DOMAIN}/getAToken
+      - DOMAIN=${DOMAIN}
+      - CLIENT_ID=${CLIENT_ID}
+      - CLIENT_SECRET=${CLIENT_SECRET}
+      - VERIFY_SSL=${VERIFY_SSL}
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  file-service:
+    <<: *default-env
+    image: registry.gitlab.com/marc.haenni/semesterarbeit-3-marc-haenni/file-service:latest
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./file-service/uploaded_files:/app/uploads
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  license-service:
+    <<: *default-env
+    image: registry.gitlab.com/marc.haenni/semesterarbeit-3-marc-haenni/license-service:latest
+    ports:
+      - "5003:5003"
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  redis:
+    <<: *default-env
+    image: redis:6.2
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  ma-proxy:
+    <<: *default-env
+    image: jonasal/nginx-certbot:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - CERTBOT_EMAIL=marc.haenni@hotmail.ch
+      - CERTBOT_DOMAINS=${DOMAIN}
+      - DOMAIN=${DOMAIN}
+    volumes:
+      - nginx_secrets:/etc/letsencrypt
+      - ./user_conf.d:/etc/nginx/user_conf.d
+    depends_on:
+      - frontend
+      - auth-service
+      - file-service
+      - license-service
+
+volumes:
+  nginx_secrets:
+

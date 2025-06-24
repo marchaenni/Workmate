@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+    <div class="max-w-2xl mx-auto p-6 mt-10 bg-white rounded-xl shadow-md space-y-6">
+        <!-- Tenant Logo -->
+        {% if logo_url %}
+            <div class="flex justify-center">
+                <img src="{{ logo_url }}" alt="Tenant Logo" class="h-16 mb-4">
+            </div>
+        {% endif %}
+
+        <h1 class="text-2xl font-bold text-center">👋 Willkommen, {{ user.name }}</h1>
+        <p class="text-center text-gray-500">Tenant-ID: {{ user.tenant_id }}</p>
+
+        <div class="border-t pt-6">
+            <h2 class="text-lg font-semibold mb-3">Verfügbare Dienste</h2>
+            <ul class="space-y-2">
+                <li>
+                    <a href="/license" class="inline-block w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                        📦 Lizenzverwaltung starten
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="text-center pt-4">
+            <a href="https://login.microsoftonline.com/common/oauth2/logout"
+               class="text-sm text-red-500 hover:underline">
+                🚪 Logout
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>

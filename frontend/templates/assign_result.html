@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Ergebnis Lizenzzuweisung</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+    <div class="max-w-4xl mx-auto p-6 mt-10 bg-white rounded-xl shadow-md space-y-6">
+        <h2 class="text-2xl font-bold text-center">📋 Ergebnis der Lizenzzuweisung für <span class="text-indigo-600">{{ license_name }}</span></h2>
+
+        {% if error %}
+            <div class="text-red-600 text-center font-medium">{{ error }}</div>
+        {% else %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full table-auto border border-gray-300">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-4 py-2 text-left">Benutzer (UPN)</th>
+                            <th class="px-4 py-2 text-left">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for result in results %}
+                        <tr>
+                            <td class="px-4 py-2">{{ result.upn }}</td>
+                            <td class="px-4 py-2">
+                                {% if 'Lizenz zugewiesen' in result.status %}
+                                    <span class="text-green-600 font-medium">{{ result.status }}</span>
+                                {% elif 'bereits vorhanden' in result.status %}
+                                    <span class="text-blue-600 font-medium">{{ result.status }}</span>
+                                {% elif 'nicht gefunden' in result.status %}
+                                    <span class="text-red-600 font-medium">{{ result.status }}</span>
+                                {% elif 'Fehler' in result.status %}
+                                    <span class="text-red-500 font-medium">{{ result.status }}</span>
+                                {% else %}
+                                    <span class="text-yellow-600 font-medium">{{ result.status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+
+        <div class="text-center pt-4">
+            <a href="/license" class="text-sm text-blue-600 hover:underline">← Zurück zur Lizenzübersicht</a>
+        </div>
+    </div>
+
+</body>
+</html>
