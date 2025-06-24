@@ -62,6 +62,17 @@ services:
     networks:
       - backend
 
+  group-service:
+    <<: *default-env
+    build: ./group-service
+    ports:
+      - "5004:5004"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - backend
+
   redis:
     <<: *default-env
     image: redis:6.2
@@ -94,6 +105,7 @@ services:
       - auth-service
       - file-service
       - license-service
+      - group-service
     networks:
       - backend
 
