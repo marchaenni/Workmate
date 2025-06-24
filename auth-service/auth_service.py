@@ -79,11 +79,16 @@ def me():
     if 'user' not in session:
         return jsonify({"error": "unauthorized"}), 401
 
-    return jsonify({
+    user_info = {
         "name": session["user"]["name"],
         "tenant_id": session["tenant_id"],
-        "access_token": session["access_token"]
-    })
+    }
+
+    # Gebe das Token nur für interne Service-zu-Service Aufrufe heraus
+    if request.headers.get("X-Internal-Request") == "true":
+        user_info["access_token"] = session.get("access_token")
+
+    return jsonify(user_info)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True)
