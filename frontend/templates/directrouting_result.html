@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Ergebnis Direct Routing</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+<div class="max-w-4xl mx-auto p-6 mt-10 bg-white rounded-xl shadow-md space-y-6">
+    <h2 class="text-2xl font-bold text-center">📋 Ergebnis der Rufnummernzuweisung</h2>
+
+    {% if error %}
+        <div class="text-red-600 text-center font-medium">{{ error }}</div>
+    {% else %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-auto border border-gray-300">
+                <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-4 py-2 text-left">Benutzer (UPN)</th>
+                    <th class="px-4 py-2 text-left">Nummer</th>
+                    <th class="px-4 py-2 text-left">Status</th>
+                    <th class="px-4 py-2 text-left">Typ</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                {% for result in results %}
+                    <tr>
+                        <td class="px-4 py-2">{{ result.upn }}</td>
+                        <td class="px-4 py-2">{{ result.phone }}</td>
+                        <td class="px-4 py-2">{{ result.status }}</td>
+                        <td class="px-4 py-2">{{ result.target }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    <div class="text-center pt-4">
+        <a href="/directrouting" class="text-sm text-blue-600 hover:underline">← Zurück</a>
+    </div>
+</div>
+
+</body>
+</html>

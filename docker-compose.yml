@@ -73,6 +73,17 @@ services:
     networks:
       - backend
 
+  teamsdirectrouting-service:
+    <<: *default-env
+    build: ./teamsdirectrouting-service
+    ports:
+      - "5005:5005"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - backend
+
   redis:
     <<: *default-env
     image: redis:6.2
@@ -106,6 +117,7 @@ services:
       - file-service
       - license-service
       - group-service
+      - teamsdirectrouting-service
     networks:
       - backend
 

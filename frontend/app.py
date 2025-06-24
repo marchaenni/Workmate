@@ -14,6 +14,8 @@ EXTERNAL_BASE_URL = f"https://{DOMAIN}"
 # 🔁 Interne Container-Adressen für API-Aufrufe (Docker-Netz)
 INTERNAL_AUTH_URL = "http://auth-service:5001"
 INTERNAL_LICENSE_URL = "http://license-service:5003"
+INTERNAL_GROUP_URL = "http://group-service:5004"
+INTERNAL_DR_URL = "http://teamsdirectrouting-service:5005"
 
 # SSL-Verifizierung (nur für externe Zugriffe wichtig)
 VERIFY_SSL = os.getenv("VERIFY_SSL", "true").lower() != "false"
@@ -120,6 +122,100 @@ def assign_license():
 
     except Exception as e:
         return f"Fehler bei der Lizenzzuweisung: {e}", 500
+
+
+@app.route("/group")
+def group():
+    access_token = session.get("access_token")
+    if not access_token:
+        return "Access Token fehlt oder Session abgelaufen", 401
+
+    try:
+        group_res = requests.get(
+            f"{INTERNAL_GROUP_URL}/groups",
+            headers={"Authorization": f"Bearer {access_token}"},
+            verify=VERIFY_SSL
+        )
+        group_data = group_res.json()
+    except Exception as e:
+        return f"Fehler beim Group-Service: {e}"
+
+    return render_template("group.html", groups=group_data)
+
+
+@app.route("/assign_group", methods=["POST"])
+def assign_group():
+    access_token = session.get("access_token")
+    if not access_token:
+        return redirect(f"{EXTERNAL_BASE_URL}/auth")
+
+    file = request.files.get("file")
+    group_name = request.form.get("group_name")
+
+    if not file or not group_name:
+        return "Datei oder Gruppenname fehlt", 400
+
+    files = {'file': (file.filename, file.stream, file.mimetype)}
+    data = {'group_name': group_name}
+
+    try:
+        res = requests.post(
+            f"{INTERNAL_GROUP_URL}/assign",
+            files=files,
+            data=data,
+            headers={"Authorization": f"Bearer {access_token}"}
+        )
+
+        result = res.json()
+
+        return render_template(
+            "group_result.html",
+            results=result.get("results", []),
+            error=result.get("error"),
+            group_name=group_name
+        )
+
+    except Exception as e:
+        return f"Fehler bei der Gruppenzuweisung: {e}", 500
+
+
+@app.route("/directrouting")
+def directrouting():
+    access_token = session.get("access_token")
+    if not access_token:
+        return "Access Token fehlt oder Session abgelaufen", 401
+    return render_template("directrouting.html")
+
+
+@app.route("/assign_directrouting", methods=["POST"])
+def assign_directrouting():
+    access_token = session.get("access_token")
+    if not access_token:
+        return redirect(f"{EXTERNAL_BASE_URL}/auth")
+
+    file = request.files.get("file")
+    if not file:
+        return "Datei fehlt", 400
+
+    files = {'file': (file.filename, file.stream, file.mimetype)}
+
+    try:
+        res = requests.post(
+            f"{INTERNAL_DR_URL}/assign",
+            files=files,
+            headers={"Authorization": f"Bearer {access_token}"}
+        )
+
+        result = res.json()
+
+        return render_template(
+            "directrouting_result.html",
+            results=result.get("results", []),
+            error=result.get("error")
+        )
+
+    except Exception as e:
+        return f"Fehler bei der Rufnummernzuweisung: {e}", 500
 
 
 if __name__ == "__main__":
