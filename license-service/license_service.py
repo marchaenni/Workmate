@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 import requests
+import jwt
+import datetime
 
 app = Flask(__name__)
 
@@ -12,6 +14,19 @@ def extract_token(auth_header):
     if auth_header and auth_header.lower().startswith('bearer '):
         return auth_header[7:]
     return None
+
+def token_is_expired(token: str) -> bool:
+    """Prüft das Ablaufdatum des JWT ohne Signaturprüfung."""
+    try:
+        decoded = jwt.decode(token, options={"verify_signature": False})
+        exp = decoded.get("exp")
+        if exp is None:
+            return True
+        expire_time = datetime.datetime.utcfromtimestamp(exp)
+        return expire_time < datetime.datetime.utcnow()
+    except Exception as e:
+        print("[License-Service] Token konnte nicht dekodiert werden:", e)
+        return True
 
 def get_licenses_dict(token):
     print("[License-Service] Hole Lizenzinformationen...")
@@ -52,8 +67,8 @@ def get_licenses():
     token = extract_token(auth_header)
     print("[License-Service] Token extrahiert:", token)
 
-    if not token:
-        return jsonify({"error": "Kein Token erhalten oder Format ungültig"}), 401
+    if not token or token_is_expired(token):
+        return jsonify({"error": "Token fehlt oder abgelaufen"}), 401
 
     try:
         licenses = get_licenses_dict(token)
@@ -69,8 +84,8 @@ def assign_licenses():
     token = extract_token(auth_header)
     print("[License-Service] Token extrahiert:", token)
 
-    if not token:
-        return jsonify({"error": "Kein Token erhalten oder Format ungültig"}), 401
+    if not token or token_is_expired(token):
+        return jsonify({"error": "Token fehlt oder abgelaufen"}), 401
 
     license_name = request.form.get("license_name")
     file = request.files.get("file")

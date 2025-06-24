@@ -21,7 +21,12 @@ VERIFY_SSL = os.getenv("VERIFY_SSL", "true").lower() != "false"
 @app.route("/")
 def app_frontpage():
     try:
-        res = requests.get(f"{INTERNAL_AUTH_URL}/me", cookies=request.cookies, verify=VERIFY_SSL)
+        res = requests.get(
+            f"{INTERNAL_AUTH_URL}/me",
+            cookies=request.cookies,
+            headers={"X-Internal-Request": "true"},
+            verify=VERIFY_SSL,
+        )
         if res.status_code == 200:
             user_data = res.json()
             session["access_token"] = user_data.get("access_token")
@@ -35,7 +40,12 @@ def app_frontpage():
 def index():
     try:
         # Token vom Auth-Service holen
-        res = requests.get(f"{INTERNAL_AUTH_URL}/me", cookies=request.cookies, verify=VERIFY_SSL)
+        res = requests.get(
+            f"{INTERNAL_AUTH_URL}/me",
+            cookies=request.cookies,
+            headers={"X-Internal-Request": "true"},
+            verify=VERIFY_SSL,
+        )
 
         if res.status_code != 200:
             # Nutzer im Browser weiterleiten (öffentliche URL)
