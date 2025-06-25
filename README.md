@@ -28,3 +28,4 @@ This project includes a GitHub Actions workflow that builds the services, runs t
    - `EC2_USER` – SSH username.
    - `EC2_SSH_KEY` – Private key with access to the server.
 4. Push changes to the `main` branch. The workflow defined in `.github/workflows/deploy.yml` will run the tests and update the running stack on the EC2 instance.
+
